@@ -145,68 +145,54 @@ std::vector<Iblock*> board::GetPeices() const
 
 bool board::UpdateBoard()
 {
-    int i = 0;
-    int j = 0;
     std::vector<int> rmRows;
     std::vector<int> rmCols;
+    int i = 0;
+    int j = 0;
+    bool fullRow = true;
+    bool fullCol = true;
 
-    //finding which cols and rows needs to be removed
-    for(i = 0; i < SIZE; i++)
+    //identify full rows and columns
+    for (i = 0; i < SIZE; i++) 
     {
-        if(this->_gameBoard[i][0].placed)
-        {
-            for(j = 1; j < SIZE; j++)
-            {
-                if(!this->_gameBoard[i][j].placed)
-                {
-                    break;
-                }
-                if(j == SIZE-1)
-                {
-                    rmRows.push_back(i);
-                }
-            }
-        }
-        if(this->_gameBoard[0][i].placed)
-        {
-            for(j = 1; j < SIZE; j++)
-            {
-                if(!this->_gameBoard[j][i].placed)
-                {
-                    break;
-                }
-                if(j == SIZE-1)
-                {
-                    rmCols.push_back(i);
-                }
-                
-            }
-        }
-    }  
+        fullRow = true;
+        fullCol = true;
 
-    if(!rmRows.empty())
-    {
-        for (auto row : rmRows)
+        for (j = 0; j < SIZE; j++) 
         {
-            for(i = 0; i < SIZE; i++)
-            {
-                this->_gameBoard[row][i].placed = false;
-            }
+            if (!this->_gameBoard[i][j].placed) fullRow = false;
+            if (!this->_gameBoard[j][i].placed) fullCol = false;
         }
-    }
-    if(!rmCols.empty())
-    {
-        for (auto col : rmCols)
+
+        if (fullRow) 
         {
-            for(i = 0; i < SIZE; i++)
-            {
-                this->_gameBoard[i][col].placed = false;
-            }
+            rmRows.push_back(i);
+        }
+        if (fullCol) 
+        {
+            rmCols.push_back(i);
         }
     }
 
-    return true;
+    //clear identified rows
+    for (auto row : rmRows) {
+        for (int i = 0; i < SIZE; i++) {
+            this->_gameBoard[row][i].placed = false;
+            this->_gameBoard[row][i].color = EMPTY;
+        }
+    }
+
+    //clear identified cols
+    for (auto col : rmCols) {
+        for (int i = 0; i < SIZE; i++) {
+            this->_gameBoard[i][col].placed = false;
+            this->_gameBoard[i][col].color = EMPTY;
+        }
+    }
+
+    return !rmRows.empty() || !rmCols.empty(); // Return true if something was removed
 }
+
 
 void board::randomizeBoard()
 {
@@ -281,10 +267,8 @@ std::string board::palcePeice(Iblock* peice, int row, int col)
     int j = 0;
 
     //checking if peice fits in bounds
-    if((peice->getCols() + col > SIZE) || (peice->getRows() + row > SIZE))
+    if((peice->getCols() - 1 + col > SIZE - 1) || (peice->getRows() - 1 + row > SIZE - 1))
     {
-        // std::cout << "Random location for generation outside play area for: " << peice->GetName() << std::endl;
-        // std::cout << "Random location generated: (" << row << ", " << col << ")" << std::endl;
         return "Cant palce a peice outside the play area!";
     }
 
@@ -307,8 +291,11 @@ std::string board::palcePeice(Iblock* peice, int row, int col)
     {
         for(j = 0; j < peice->getRows(); j++)
         {
-            this->_gameBoard[row + j][col + i].placed = true;
-            this->_gameBoard[row + j][col + i].color = ColorMap(randomColor);
+            if(peice->GetPeice()[j][i] == true)
+            {
+                this->_gameBoard[row + j][col + i].placed = true;
+                this->_gameBoard[row + j][col + i].color = ColorMap(randomColor);
+            }
         }
     }
 

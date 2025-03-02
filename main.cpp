@@ -275,7 +275,10 @@ public:
                 note = this->_gameBoard->palcePeice(block, selectedPoints[0].row, selectedPoints[0].col);
                 if(note == "")
                 {
+                    note = block->GetName();
+                    block = nullptr;
                     this->_gameBoard->UpdateBoard();
+                    grid = _gameBoard->GetBoard();
                     items[selected_item_index] = usedBlock;
                     selected_item_index = -1;
                     selectedPoints.clear();
